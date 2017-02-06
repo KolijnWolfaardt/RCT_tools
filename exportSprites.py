@@ -122,7 +122,7 @@ if args.out_width:
 	maxImageWidth = args.out_width
 
 if args.out_height:
-	maxImageHeight = args.out_width
+	maxImageHeight = args.out_height
 
 if args.c1:
 	customColor1 = args.c1
