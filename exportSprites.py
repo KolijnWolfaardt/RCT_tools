@@ -9,72 +9,61 @@ import numpy as np
 verbose = False
 
 """
-	Basic Reading functions. Auto converts to the correct file type
+    Basic Reading functions. Auto converts to the correct file type
 """
 def readBytes(number):
-	dataArray = []
-
-	pos = filepointer.tell()
-	dataToCopy = filepointer.read(number)
-
-	#globalRead = globalRead+number
-
-	for a in dataToCopy:
-		dataArray.append(struct.unpack("b",a)[0])
-
-	return dataArray
+    return filepointer.read(number)
 
 #A small int is a 2 byte signed integer
 def readSmallint():
-	data1 = readBytes(2)
-	return data1[1]<<8 | data1[0]%256
+    return struct.unpack("h", filepointer.read(2))[0]
+
 
 #A word is probably a 2 byte unsigned number
 def readWord():
-	return readSmallint()% 2**16
+    return struct.unpack("H", filepointer.read(2))[0]
 
 # int is a 4 byte signed integer
 def readInt():
-	data1 = readBytes(4)
-	return data1[3]%256<<24 | data1[2]%256<<16 | data1[1]%256<<8 | data1[0]%256
+    return struct.unpack("i", filepointer.read(4))[0]
 
 #A long word is probably a 2 byte unsigned number
 def readLongword():
-	return readInt() % 2**32
+    return struct.unpack("I", filepointer.read(4))[0]
 
 def log(message):
-	if verbose==True:
-		print message
+    if verbose==True:
+        print(message)
 
 """
 Write a number above a sprite
 """
 def writenum(arr,xOffset,yOffset,num):
-	#First convert to a decimal representation
-	a = "{}".format(num)
+    #First convert to a decimal representation
+    a = "{}".format(num)
 
-	#For each of the digits
-	for i in range(len(a)):
-		singleCharacter = numberData[int(a[i])]
-		for y in range(5):
-			for x in range(3):
-				if singleCharacter[y][x] == 1:
-					arr[yOffset+y,xOffset+x+i*4,:] = np.array([0,0,0])
+    #For each of the digits
+    for i in range(len(a)):
+        singleCharacter = numberData[int(a[i])]
+        for y in range(5):
+            for x in range(3):
+                if singleCharacter[y][x] == 1:
+                    arr[yOffset+y,xOffset+x+i*4,:] = np.array([0,0,0])
 
 
 """
 The numberData is used to display numbers next to the sprites
 """
 numberData=[[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
-	[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[1,1,1]],
-	[[1,1,1],[0,0,1],[1,1,1],[1,0,0],[1,1,1]],
-	[[1,1,1],[0,0,1],[0,1,1],[0,0,1],[1,1,1]],
-	[[1,0,0],[1,0,0],[1,0,1],[1,1,1],[0,0,1]],
-	[[1,1,1],[1,0,0],[1,1,1],[0,0,1],[1,1,1]],
-	[[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,1,1]],
-	[[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-	[[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]],
-	[[1,1,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1]]]
+    [[0,1,0],[1,1,0],[0,1,0],[0,1,0],[1,1,1]],
+    [[1,1,1],[0,0,1],[1,1,1],[1,0,0],[1,1,1]],
+    [[1,1,1],[0,0,1],[0,1,1],[0,0,1],[1,1,1]],
+    [[1,0,0],[1,0,0],[1,0,1],[1,1,1],[0,0,1]],
+    [[1,1,1],[1,0,0],[1,1,1],[0,0,1],[1,1,1]],
+    [[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,1,1]],
+    [[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+    [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]],
+    [[1,1,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1]]]
 
 # 'Global' variables
 filepoint 		= None
@@ -105,42 +94,42 @@ parser.add_argument("-p", help="Sets the palette to the specified file")
 args = parser.parse_args()
 
 if args.verbose:
-	verbose = True
+    verbose = True
 
 if args.file:
-	filename = args.file
+    filename = args.file
 
 if not args.sprite_start == None:
-	spriteStart = args.sprite_start
-	print "Set start to {}".format(spriteStart)
+    spriteStart = args.sprite_start
+    print("Set start to {}".format(spriteStart))
 
 if not args.sprite_end == None:
-	spriteEnd = args.sprite_end
-	print "Set end to {}".format(spriteEnd)
+    spriteEnd = args.sprite_end
+    print("Set end to {}".format(spriteEnd))
 
 if args.out_width:
-	maxImageWidth = args.out_width
+    maxImageWidth = args.out_width
 
 if args.out_height:
-	maxImageHeight = args.out_height
+    maxImageHeight = args.out_height
 
 if args.c1:
-	customColor1 = args.c1
+    customColor1 = args.c1
 
 if args.c2:
-	customColor1 = args.c2
+    customColor1 = args.c2
 
 if args.p:
-	paletteFile = args.p
-	palette = "custom"
+    paletteFile = args.p
+    palette = "custom"
 
 #Check that the file exists
 if os.path.isfile(filename):
-	filepointer = open(filename,'rb')
-	log ("File opened")
+    filepointer = open(filename,'rb')
+    log ("File opened")
 else:
-	print "Could not find g1.data file. Make sure it is in the current directory, or specify a file with -f"
-	quit()
+    print("Could not find g1.data file. Make sure it is in the current directory, or specify a file with -f")
+    quit()
 
 #Read the number of images in the file
 nrImages = readInt()
@@ -154,15 +143,16 @@ spriteLookupArr = []
 
 for n in range(0,nrImages):
 
-	startAddr 	= readLongword()
-	width 		= readWord()
-	height 		= readWord()
-	xOffset		= readSmallint()
-	yOffset		= readSmallint()
-	flags		= readWord()
-	padding		= readWord()
+    startAddr 	= readLongword()
+    width 		= readWord()
+    height 		= readWord()
+    xOffset		= readSmallint()
+    yOffset		= readSmallint()
+    flags		= readWord()
+    padding		= readWord()
 
-	spriteLookupArr.append([startAddr,width,height,xOffset,yOffset,flags,padding])
+    spriteLookupArr.append([startAddr,width,height,xOffset,yOffset,flags,padding])
+
 
 #imageDataStartsAt stores the location in the file where the image data starts
 imageDataStartsAt = filepointer.tell()
@@ -170,35 +160,35 @@ imageDataStartsAt = filepointer.tell()
 paletteColors = []
 #Check if the palettes are there.
 if palette=="default":
-	if (os.path.isfile("./palettes/Palette_0cb27f")):
+    if (os.path.isfile("./palettes/Palette_0cb27f")):
 
-		#Palette found, load it
-		paletteFile = open("./palettes/Palette_0cb27f")
-		lines = paletteFile.readlines()
-		for l in lines:
-			colors = l.split(',')
-			paletteColors.append([int(colors[0]),int(colors[1]),int(colors[2])])
-		paletteFile.close()
+        #Palette found, load it
+        paletteFile = open("./palettes/Palette_0cb27f")
+        lines = paletteFile.readlines()
+        for l in lines:
+            colors = l.split(',')
+            paletteColors.append([int(colors[0]),int(colors[1]),int(colors[2])])
+        paletteFile.close()
 
-	else:
-		#Force a run with only the palettes
-		print "No palette found. Doing a run with only palettes"
-		onlyDoPalette = True
-		spriteEnd = 29294
+    else:
+        #Force a run with only the palettes
+        print("No palette found. Doing a run with only palettes")
+        onlyDoPalette = True
+        spriteEnd = 29294
 else:
-	#Load the palette that the user specified
-	paletteFile = open("./palettes/Palette_0cb27f")
-	lines = paletteFile.readlines()
-	for l in lines:
-		colors = l.split(',')
-		paletteColors.append([int(colors[0]),int(colors[1]),int(colors[2])])
-	paletteFile.close()
+    #Load the palette that the user specified
+    paletteFile = open("./palettes/Palette_0cb27f")
+    lines = paletteFile.readlines()
+    for l in lines:
+        colors = l.split(',')
+        paletteColors.append([int(colors[0]),int(colors[1]),int(colors[2])])
+    paletteFile.close()
 
 if not os.path.exists("./output"):
-	os.makedirs("./output")
+    os.makedirs("./output")
 
 if not os.path.exists("./palettes"):
-	os.makedirs("./palettes")
+    os.makedirs("./palettes")
 
 nfoFile = open("output/sprites.nfo","w")
 
@@ -229,49 +219,49 @@ positionsToAddToThePage = []
 #Loop through all the sprites, to determine their positions
 for i in range(spriteStart,spriteStart+numSprites):
 
-	#Get the sprite details
-	spriteData = spriteLookupArr[i]
-	startAddr 	= spriteData[0]
-	width 		= spriteData[1]
-	height 		= spriteData[2]
-	xOffset		= spriteData[3]
-	yOffset		= spriteData[4]
-	flags		= spriteData[5]
+    #Get the sprite details
+    spriteData = spriteLookupArr[i]
+    startAddr 	= spriteData[0]
+    width 		= spriteData[1]
+    height 		= spriteData[2]
+    xOffset		= spriteData[3]
+    yOffset		= spriteData[4]
+    flags		= spriteData[5]
 
 
-	#If the sprite will fit on this line, add it
-	if max(linePosition*spriteWidth+width+2,(linePosition+1)*spriteWidth-1) < maxImageWidth:
-		#The sprite will fit!
-		#Append its position to the currentPagePositions Array
-		positionsToAddToThePage.append([linePosition*spriteWidth+2,currentHeight])
-		lineHeight = max(lineHeight,height+8)
-		linePosition = linePosition + int(math.floor((width+2)/spriteWidth))+1
+    #If the sprite will fit on this line, add it
+    if max(linePosition*spriteWidth+width+2,(linePosition+1)*spriteWidth-1) < maxImageWidth:
+        #The sprite will fit!
+        #Append its position to the currentPagePositions Array
+        positionsToAddToThePage.append([linePosition*spriteWidth+2,currentHeight])
+        lineHeight = max(lineHeight,height+8)
+        linePosition = linePosition + int(math.floor((width+2)/spriteWidth))+1
 
-	else:
-		#The sprite does not fit! move it to the next line!
-		#First check if we have to move to the next image as well?
-		if (currentHeight+lineHeight > maxImageHeight):
-			#Add currentPagePositions to the big array, and clear it
-			listOfPages.append(currentPagePositions)
-			currentPagePositions = []
-			currentHeight = 0
+    else:
+        #The sprite does not fit! move it to the next line!
+        #First check if we have to move to the next image as well?
+        if (currentHeight+lineHeight > maxImageHeight):
+            #Add currentPagePositions to the big array, and clear it
+            listOfPages.append(currentPagePositions)
+            currentPagePositions = []
+            currentHeight = 0
 
-			#All the sprites that are yet to be added have wrong heights. change it
-			for j in range(0,len(positionsToAddToThePage)):
-				positionsToAddToThePage[j][1] = 0
+            #All the sprites that are yet to be added have wrong heights. change it
+            for j in range(0,len(positionsToAddToThePage)):
+                positionsToAddToThePage[j][1] = 0
 
-			
-		#Add the previous array to i, since it hasn't been added yet
-		currentPagePositions = currentPagePositions + positionsToAddToThePage
-		currentHeight = currentHeight+lineHeight
-		linePosition = 0
+            
+        #Add the previous array to i, since it hasn't been added yet
+        currentPagePositions = currentPagePositions + positionsToAddToThePage
+        currentHeight = currentHeight+lineHeight
+        linePosition = 0
 
-		#These positions have just been added. Clear the array
-		positionsToAddToThePage = []
+        #These positions have just been added. Clear the array
+        positionsToAddToThePage = []
 
-		positionsToAddToThePage.append([linePosition*spriteWidth+2,currentHeight])
-		lineHeight = height+8
-		linePosition = linePosition + int(math.floor((width+2)/spriteWidth))+1
+        positionsToAddToThePage.append([linePosition*spriteWidth+2,currentHeight])
+        lineHeight = height+8
+        linePosition = linePosition + int(math.floor((width+2)/spriteWidth))+1
 
 
 
@@ -287,154 +277,155 @@ totalSprites = 0
 
 for pageNumber in range(0,len(listOfPages)):
 
-	#Get a list of all the positions for sprites
-	currentPagePositions = listOfPages[pageNumber]
+    #Get a list of all the positions for sprites
+    currentPagePositions = listOfPages[pageNumber]
 
-	#Create a new image to work on
-	emptyImage = np.ones((maxImageHeight,maxImageWidth,3),'uint8')*255
+    #Create a new image to work on
+    emptyImage = np.ones((maxImageHeight,maxImageWidth,3),'uint8')*255
 
-	log("Processing page {}, containing {} sprites".format(pageNumber,len(currentPagePositions)))
+    log("Processing page {}, containing {} sprites".format(pageNumber,len(currentPagePositions)))
 
-	for n in range(0,len(currentPagePositions)):
+    for n in range(0,len(currentPagePositions)):
 
-		blockY = (currentPagePositions[n])[1]
-		blockX = (currentPagePositions[n])[0]
-		imagePosX = blockX+1
-		imagePosY = blockY+7
-		#print "\timages {} at {} {}".format(n,imagePosX,imagePosY)
+        blockY = (currentPagePositions[n])[1]
+        blockX = (currentPagePositions[n])[0]
+        imagePosX = blockX+1
+        imagePosY = blockY+7
+        #print("\timages {} at {} {}".format(n,imagePosX,imagePosY))
 
-		spriteData = spriteLookupArr[n+spriteStart+totalSprites]
+        spriteData = spriteLookupArr[n+spriteStart+totalSprites]
 
-		startAddr 	= spriteData[0]
-		width 		= spriteData[1]
-		height 		= spriteData[2]
-		xOffset		= spriteData[3]
-		yOffset		= spriteData[4]
-		flags		= spriteData[5]
-		
-		if width== 0 and height==0:
-			log("Waring: found empty image at {}".format(n+spriteStart+totalSprites))
+        startAddr 	= spriteData[0]
+        width 		= spriteData[1]
+        height 		= spriteData[2]
+        xOffset		= spriteData[3]
+        yOffset		= spriteData[4]
+        flags		= spriteData[5]
+        
+        if width== 0 and height==0:
+            log("Waring: found empty image at {}".format(n+spriteStart+totalSprites))
 
-		offsetAddress = startAddr+imageDataStartsAt
+        offsetAddress = startAddr+imageDataStartsAt
 
-		#Write pageNumber, sprite number, total sprite number, width, height, xOffset, yOffset, flags
-		nfoFile.write("{}, {:4}, {:6}, {:6x}, {}, {}, {}, {}, {}, {}, {}\n".format(pageNumber,n,n+spriteStart+totalSprites,offsetAddress,width,height,xOffset,yOffset,flags,imagePosX,imagePosY))
+        #Write pageNumber, sprite number, total sprite number, width, height, xOffset, yOffset, flags
+        nfoFile.write("{}, {:4}, {:6}, {:6x}, {}, {}, {}, {}, {}, {}, {}\n".format(pageNumber,n,n+spriteStart+totalSprites,offsetAddress,width,height,xOffset,yOffset,flags,imagePosX,imagePosY))
 
-		writenum(emptyImage,blockX+1,blockY+1,n+spriteStart+totalSprites)
-		
-		#This is a compressed image
-		if (flags == 5 or flags==21) and onlyDoPalette == False: 
-			#Go to the address			
-			filepointer.seek(offsetAddress)
-			firstHeader = readWord()
+        writenum(emptyImage,blockX+1,blockY+1,n+spriteStart+totalSprites)
+        
+        #This is a compressed image
+        if (flags == 5 or flags==21) and onlyDoPalette == False: 
+            #Go to the address			
+            filepointer.seek(offsetAddress)
+            firstHeader = readWord()
 
-			#Read the offsets to the individual scan lines
-			bogusBytes = readBytes(firstHeader-2)
+            #Read the offsets to the individual scan lines
+            bogusBytes = readBytes(firstHeader-2)
 
-			#Fill the background with black, so we can see it
-			try:
-				for x in range(0,width):
-					for y in range(0,height):
-						emptyImage[imagePosY+y,imagePosX+x,:] = np.array([112,146,190])	
-			except  IndexError:
-				log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
+            #Fill the background with black, so we can see it
+            try:
+                for x in range(0,width):
+                    for y in range(0,height):
+                        emptyImage[imagePosY+y,imagePosX+x,:] = np.array([112,146,190])	
+            except  IndexError:
+                log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
 
-			#Loop through height
-			y = 0
-			#for counter1 in range(0,len(bogusBytes)/2):
-			while (y<height):
-				firstHeader = readBytes(1)[0]%256
-				dataLength = firstHeader%128
+            #Loop through height
+            y = 0
+            #for counter1 in range(0,len(bogusBytes)/2):
+            while (y<height):
+                firstHeader = readBytes(1)[0]%256
+                dataLength = firstHeader%128
 
-				x = readBytes(1)[0]
+                x = readBytes(1)[0]
 
-				imagesData = readBytes(dataLength%256)
+                imagesData = readBytes(dataLength%256)
 
-				for i in range(0,len(imagesData)):
-					position = (imagesData[i])%256
+                for i in range(0,len(imagesData)):
+                    position = (imagesData[i])%256
 
-					#Replace customColor1
-					if position>= 243 and position<256:
-						position = position-243 + customColor1*12+10
+                    #Replace customColor1
+                    if position>= 243 and position<256:
+                        position = position-243 + customColor1*12+10
 
-					posOffset = position-10
+                    posOffset = position-10
 
-					if posOffset>= 16*12 and posOffset<17*12:
-						position = posOffset-16*12+10+customColor2*12
+                    if posOffset>= 16*12 and posOffset<17*12:
+                        position = posOffset-16*12+10+customColor2*12
 
-					#print ("Looking up position {}".format(position))
-					color = paletteColors[position]
-					try:
-						emptyImage[imagePosY+y,imagePosX+x+i,:] = np.array([color[2],color[1],color[0]])
-					except  IndexError:
-						log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
-			
+                    #print(("Looking up position {}".format(position)))
+                    color = paletteColors[position]
+                    try:
+                        emptyImage[imagePosY+y,imagePosX+x+i,:] = np.array([color[2],color[1],color[0]])
+                    except  IndexError:
+                        log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
+            
 
-				#If this is false, there will be another scanline for THE SAME LINE
-				if (firstHeader>127):
-					y = y+1
+                #If this is false, there will be another scanline for THE SAME LINE
+                if (firstHeader>127):
+                    y = y+1
 
-		#Plain BMP image
-		if (flags == 1 or flags==17) and onlyDoPalette == False: 
-			filepointer.seek(offsetAddress)
+        #Plain BMP image
+        if (flags == 1 or flags==17) and onlyDoPalette == False: 
+            filepointer.seek(offsetAddress)
 
-			imagesData = readBytes(height*width)
-			for x in range(0,height):
-				for y in range(0,width):
-					position = (imagesData[x*width+y])%256
-					color = paletteColors[position]
-					try:
-						emptyImage[imagePosY+x,imagePosX+y,:] = np.array([color[2],color[1],color[0]])	
-					except  IndexError:
-						log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
-						continue
-		
+            imagesData = readBytes(height*width)
+            for x in range(0,height):
+                for y in range(0,width):
+                    position = (imagesData[x*width+y])%256
+                    color = paletteColors[position]
+                    try:
+                        emptyImage[imagePosY+x,imagePosX+y,:] = np.array([color[2],color[1],color[0]])	
+                    except  IndexError:
+                        log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
+                        continue
+        
 
-		if (flags == 8):
-			log("Palette found at {}".format(n+spriteStart+totalSprites))
+        if (flags == 8):
+            log("Palette found at {}".format(n+spriteStart+totalSprites))
 
-			#Go to the addres
-			filepointer.seek(offsetAddress)
+            #Go to the addres
+            filepointer.seek(offsetAddress)
 
-			#Read the data
-			paletteArr = np.array(readBytes(width*3),'uint8')
+            #Read the data
+            palette = readBytes(width*3)
+            paletteArr = np.array(list(palette),'uint8')
 
-			colorArr = np.zeros((252,1,3),'uint8')
-			colorArr[0:width,0,0] = paletteArr[2::3]	#Red
-			colorArr[0:width,0,1] = paletteArr[1::3]	#Green
-			colorArr[0:width,0,2] = paletteArr[0::3]	#Blue
+            colorArr = np.zeros((252,1,3),'uint8')
+            colorArr[0:width,0,0] = paletteArr[2::3]	#Red
+            colorArr[0:width,0,1] = paletteArr[1::3]	#Green
+            colorArr[0:width,0,2] = paletteArr[0::3]	#Blue
 
-			#Write it to the file
-			g = open("palettes/Palette_{:06x}".format(offsetAddress),'w')
+            #Write it to the file
+            g = open("palettes/Palette_{:06x}".format(offsetAddress),'w')
 
-			#Write the required padding
-			g.write("0,0,0\n"*10)
+            #Write the required padding
+            g.write("0,0,0\n"*10)
 
-			for a in range(width):
-				g.write("{},{},{}\n".format(colorArr[a,0,2],colorArr[a,0,1],colorArr[a,0,0])),
+            for a in range(width):
+                g.write("{},{},{}\n".format(colorArr[a,0,2],colorArr[a,0,1],colorArr[a,0,0])),
 
-			#Write the required padding
-			g.write("0,0,0\n"*10)
+            #Write the required padding
+            g.write("0,0,0\n"*10)
 
-			g.close()
+            g.close()
 
-			colorArr = np.resize(colorArr,(21,12,3))
-			img = Image.fromarray(colorArr)
-			img.save('palettes/palette_{:06x}.png'.format(offsetAddress))
+            colorArr = np.resize(colorArr,(21,12,3))
+            img = Image.fromarray(colorArr)
+            img.save('palettes/palette_{:06x}.png'.format(offsetAddress))
 
-	#After the for loop
-	#Increment the total number ofsprites sofar
-	totalSprites = totalSprites + len(currentPagePositions)
-		
-	# plt.imshow(emptyImage,interpolation="nearest")
-	
-	#And save the image
-	if onlyDoPalette == False:
-		img = Image.fromarray(emptyImage)
-		img.save('output/sprite_{}.png'.format(pageNumber))
+    #After the for loop
+    #Increment the total number ofsprites sofar
+    totalSprites = totalSprites + len(currentPagePositions)
+        
+    # plt.imshow(emptyImage,interpolation="nearest")
+    
+    #And save the image
+    if onlyDoPalette == False:
+        img = Image.fromarray(emptyImage)
+        img.save('output/sprite_{}.png'.format(pageNumber))
 
 filepointer.close()
 nfoFile.close()
 
 if (onlyDoPalette ==True):
-	print "Done saving palettes. Run again with the same arguments"
+    print("Done saving palettes. Run again with the same arguments")
