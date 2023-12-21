@@ -109,7 +109,7 @@ def generate_sprite(sprite_directory, output_file, sprite_pattern):
         with Image.open(f"{sprite_directory}/sprite_{sheet_num}.png") as im:
             for sprite_index in sprites_on_this_sheet:
                 
-                sprite = Image.new("RGBA", (gif_size_x, gif_size_y), color=0)
+                sprite = Image.new("RGBA", (gif_size_x, gif_size_y), (255, 0, 0, 0))
 
                 # This gets a box around the image in the spritesheet, it does not do anythin with the image centre.
                 width = sprite_details[sprite_index]["details"][4]
@@ -121,13 +121,13 @@ def generate_sprite(sprite_directory, output_file, sprite_pattern):
                 y_offset = sprite_details[sprite_index]["details"][10]
 
                 extracted_sprite = im.crop(box=(x_offset, y_offset,x_offset+width, y_offset+height))
-                sprite.paste(extracted_sprite, (x_offset_sprite, y_offset_sprite))
+                sprite.paste(extracted_sprite, (x_offset_sprite, y_offset_sprite), mask=extracted_sprite)
 
                 # Now put this sprite in every position required by the original indexes
                 for i in sprite_details[sprite_index]["indexes"]:
                     sprites[i] = sprite
 
-    sprites[0].save(output_file, save_all = True, append_images = sprites[1:], optimize = False, duration = 100, disposal=2, loop=True)
+    sprites[0].save(output_file, save_all = True, append_images = sprites[1:], optimize = True, duration = 100, disposal=2, loop=True,transparency=0)
 
 #Add the arguments
 parser = argparse.ArgumentParser()
@@ -157,13 +157,16 @@ generate_sprite(directory, output, sprite_pattern)
 
 
 # python exportSprites.py -f g1.dat
-# python exportSprites.py -s 11441 -e 11879 -a -c2 10 -f g1.dat
+# python exportSprites.py -s 5000 -e 6000 -a -c2 10 -f g1.dat
 # python animate_sprite.py "5298:5313,5313:5298:-1" -o sick_icon.gif
 # python animate_sprite.py "5375:5390" -o cash_graph.gif
-# python animate_sprite.py "5423:5441" -o marketing_ico.gif
+
+# This one has some transparency issue
+# python animate_sprite.py "5424:5441, 5423" -o marketing_ico.gif
 
 
 # Guy Walking, Bottom Right
+# python exportSprites.py -s 6200 -e 6800 -a -c2 4 -f g1.dat
 # python animate_sprite.py "6411:6431:4" -o guy_walking.gif
 
 # Handyman
