@@ -48,7 +48,7 @@ def writenum(arr,xOffset,yOffset,num):
         for y in range(5):
             for x in range(3):
                 if singleCharacter[y][x] == 1:
-                    arr[yOffset+y,xOffset+x+i*4,:] = np.array([0,0,0])
+                    arr[yOffset+y,xOffset+x+i*4,:] = np.array([0,0,0,255])
 
 
 """
@@ -73,6 +73,7 @@ maxImageWidth	= 1000
 maxImageHeight  = 1000
 filename 		= 'g1.dat'
 verbose			= False
+alpha           = False
 customColor1 	= 3
 customColor2 	= 4
 paletteFile		= "./palettes/Palette_0cb27f"
@@ -91,6 +92,7 @@ parser.add_argument("--out-height", help="Set the output file height. Defaults t
 parser.add_argument("-c1", help="Sets colour 1 to replace.",type=int)
 parser.add_argument("-c2", help="Sets colour 2 to replace.",type=int)
 parser.add_argument("-p", help="Sets the palette to the specified file")
+parser.add_argument("-a", help="Enable alpha. If this is enabled, the spritesheet background will be transparent", action="store_true")
 args = parser.parse_args()
 
 if args.verbose:
@@ -122,6 +124,9 @@ if args.c2:
 if args.p:
     paletteFile = args.p
     palette = "custom"
+
+if args.a:
+    alpha = True
 
 #Check that the file exists
 if os.path.isfile(filename):
@@ -280,8 +285,11 @@ for pageNumber in range(0,len(listOfPages)):
     #Get a list of all the positions for sprites
     currentPagePositions = listOfPages[pageNumber]
 
-    #Create a new image to work on
-    emptyImage = np.ones((maxImageHeight,maxImageWidth,3),'uint8')*255
+    #Create a new image to work on - now with an alpha channel
+    emptyImage = np.zeros((maxImageHeight,maxImageWidth,4),'uint8')
+    if not alpha:
+        # Fill entire image whith white
+        emptyImage[:,:,:] = 255
 
     log("Processing page {}, containing {} sprites".format(pageNumber,len(currentPagePositions)))
 
@@ -322,12 +330,13 @@ for pageNumber in range(0,len(listOfPages)):
             bogusBytes = readBytes(firstHeader-2)
 
             #Fill the background with black, so we can see it
-            try:
-                for x in range(0,width):
-                    for y in range(0,height):
-                        emptyImage[imagePosY+y,imagePosX+x,:] = np.array([112,146,190])	
-            except  IndexError:
-                log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
+            if not alpha:
+                try:
+                    for x in range(0,width):
+                        for y in range(0,height):
+                            emptyImage[imagePosY+y,imagePosX+x,:] = np.array([112,146,190,255])	
+                except  IndexError:
+                    log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
 
             #Loop through height
             y = 0
@@ -355,7 +364,7 @@ for pageNumber in range(0,len(listOfPages)):
                     #print(("Looking up position {}".format(position)))
                     color = paletteColors[position]
                     try:
-                        emptyImage[imagePosY+y,imagePosX+x+i,:] = np.array([color[2],color[1],color[0]])
+                        emptyImage[imagePosY+y,imagePosX+x+i,:] = np.array([color[2],color[1],color[0], 255])
                     except  IndexError:
                         log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
             
@@ -374,7 +383,7 @@ for pageNumber in range(0,len(listOfPages)):
                     position = (imagesData[x*width+y])%256
                     color = paletteColors[position]
                     try:
-                        emptyImage[imagePosY+x,imagePosX+y,:] = np.array([color[2],color[1],color[0]])	
+                        emptyImage[imagePosY+x,imagePosX+y,:] = np.array([color[2],color[1],color[0], 255])	
                     except  IndexError:
                         log("Waring:Oversized sprite detected. Sprite {} is {} {}".format(n+spriteStart+totalSprites,width,height))
                         continue
@@ -402,7 +411,7 @@ for pageNumber in range(0,len(listOfPages)):
             g.write("0,0,0\n"*10)
 
             for a in range(width):
-                g.write("{},{},{}\n".format(colorArr[a,0,2],colorArr[a,0,1],colorArr[a,0,0])),
+                g.write("{},{},{}\n".format(colorArr[a,0,2],colorArr[a,0,1],colorArr[a,0,0]))
 
             #Write the required padding
             g.write("0,0,0\n"*10)
