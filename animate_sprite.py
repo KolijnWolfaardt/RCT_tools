@@ -170,5 +170,5 @@ generate_sprite(directory, output, sprite_pattern)
 # python animate_sprite.py "6411:6431:4" -o guy_walking.gif
 
 # Handyman
-# python exportSprites.py -s 11441 -e 11879 -a -c2 10 -f g1.dat
+# python exportSprites.py -s 11300 -e 11400 -a -c2 10 -f g1.dat
 # python animate_sprite.py "11303:11323:4,11324,11301:11321:4,11324" -o handyman_mowing.gif
